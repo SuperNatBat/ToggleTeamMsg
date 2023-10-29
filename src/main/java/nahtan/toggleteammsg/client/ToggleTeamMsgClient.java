@@ -23,13 +23,9 @@ public class ToggleTeamMsgClient implements ClientModInitializer {
             if(player == null){
                 return false;
             }
-            try {
-                String command = "/teammsg "+msg;
-                command = command.substring(1);
-                player.networkHandler.sendChatCommand(command);
-            } catch (Exception e) {
-                player.sendMessage(Text.of("shits fucked"));
-            }
+            String command = "/teammsg "+msg;
+            command = command.substring(1);
+            player.networkHandler.sendChatCommand(command);
             return false;
         });
     }
