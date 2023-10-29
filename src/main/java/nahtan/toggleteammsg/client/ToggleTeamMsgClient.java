@@ -1,12 +1,13 @@
 package nahtan.toggleteammsg.client;
 
+import nahtan.toggleteammsg.commands.ClientReplyCmd;
 import nahtan.toggleteammsg.commands.ToggleTeamMsgCmd;
+import nahtan.toggleteammsg.commands.AllChatCmd;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.text.Text;
 
 public class ToggleTeamMsgClient implements ClientModInitializer {
     /**
@@ -15,6 +16,9 @@ public class ToggleTeamMsgClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register(ToggleTeamMsgCmd::register);
+        ClientCommandRegistrationCallback.EVENT.register(AllChatCmd::register);
+        ClientCommandRegistrationCallback.EVENT.register(ClientReplyCmd::register);
+        // Listen to attempted chats
         ClientSendMessageEvents.ALLOW_CHAT.register((msg) -> {
             if(!ToggleTeamMsgCmd.isToggled()){
                 return true;
@@ -28,5 +32,13 @@ public class ToggleTeamMsgClient implements ClientModInitializer {
             player.networkHandler.sendChatCommand(command);
             return false;
         });
+        ClientSendMessageEvents.ALLOW_COMMAND.register((cmd) -> {
+            if(cmd.startsWith("msg") || cmd.startsWith("tell") || cmd.startsWith("w")){
+                String recipient = cmd.split(" ", 3)[1];
+                ClientReplyCmd.setLastUser(recipient);
+            }
+            return true;
+        });
+
     }
 }

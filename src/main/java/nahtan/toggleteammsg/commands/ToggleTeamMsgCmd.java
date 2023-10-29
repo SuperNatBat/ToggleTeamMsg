@@ -13,6 +13,7 @@ public class ToggleTeamMsgCmd {
     private static boolean isToggled = false;
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
         dispatcher.register(ClientCommandManager.literal("toggleteammsg").executes(ToggleTeamMsgCmd::execute));
+        dispatcher.register(ClientCommandManager.literal("ttm").executes(ToggleTeamMsgCmd::execute));
     }
 
     private static int execute(CommandContext<FabricClientCommandSource> ctx) {
