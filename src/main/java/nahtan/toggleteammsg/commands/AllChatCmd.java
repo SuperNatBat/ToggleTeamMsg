@@ -10,6 +10,7 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.MessageArgumentType;
 
 public class AllChatCmd {
+    private static boolean ignoreNextMessage = false;
 
 
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
@@ -18,12 +19,19 @@ public class AllChatCmd {
                         .executes(AllChatCmd::execute)));
         dispatcher.register(ClientCommandManager.literal("ac").redirect(command));
     }
+    public static boolean shouldIgnore(){
+        return ignoreNextMessage;
+    }
 
     private static int execute(CommandContext<FabricClientCommandSource> ctx) {
         String msg = ctx.getArgument("msg", MessageArgumentType.MessageFormat.class).getContents();
         try {
+            ignoreNextMessage = true;
             MinecraftClient.getInstance().player.networkHandler.sendChatMessage(msg);
-        }catch (NullPointerException ignored){}
+            ignoreNextMessage = false;
+        }catch (NullPointerException e){
+            ignoreNextMessage = false;
+        }
         return 0;
     }
 }

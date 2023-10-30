@@ -2,7 +2,6 @@ package nahtan.toggleteammsg.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.kyori.adventure.platform.fabric.FabricClientAudiences;
@@ -13,11 +12,14 @@ import net.minecraft.command.argument.MessageArgumentType;
 
 public class ClientReplyCmd {
     private static String lastUser = "";
+    private static boolean ignoreNextCmd = false;
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
-        LiteralCommandNode<FabricClientCommandSource> command = dispatcher.register(ClientCommandManager.literal("reply")
+        dispatcher.register(ClientCommandManager.literal("reply")
                 .then(ClientCommandManager.argument("msg", MessageArgumentType.message())
                         .executes(ClientReplyCmd::execute)));
-        dispatcher.register(ClientCommandManager.literal("r").redirect(command));
+        dispatcher.register(ClientCommandManager.literal("r")
+                .then(ClientCommandManager.argument("msg", MessageArgumentType.message())
+                        .executes(ClientReplyCmd::execute)));
     }
 
     private static int execute(CommandContext<FabricClientCommandSource> ctx) {
@@ -27,11 +29,16 @@ public class ClientReplyCmd {
         }
         String msg = ctx.getArgument("msg", MessageArgumentType.MessageFormat.class).getContents();
         try{
+            ignoreNextCmd = true;
             MinecraftClient.getInstance().player.networkHandler.sendChatCommand("msg "+lastUser+" "+msg);
+            ignoreNextCmd = false;
         }catch (NullPointerException ignored){}
         return 0;
     }
     public static void setLastUser(String user){
         lastUser = user;
+    }
+    public static boolean shouldIgnore(){
+        return ignoreNextCmd;
     }
 }
